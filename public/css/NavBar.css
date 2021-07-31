@@ -1,0 +1,15 @@
+.navbar.bg-light {
+    background-color: #f3e2b3 !important;
+}
+
+.navbar.bg-light .form-control {
+    border-radius: 4.25rem;
+
+}
+
+#navBar1 {
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+}

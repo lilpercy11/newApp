@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\app",
+    "\\app\\Http",
+    "\\app\\Http\\Controllers",
+    "\\app\\Models",
+    "\\config",
+    "\\public",
+    "\\public\\js",
+    "\\resources",
+    "\\resources\\js"
+  ],
+  "SelectedNode": "\\public\\js\\RegistrationValidations.js",
+  "PreviewInSolutionExplorer": false
+}
