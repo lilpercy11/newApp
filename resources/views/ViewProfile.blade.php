@@ -7,7 +7,7 @@
       <script type="text/javascript" src="{{URL::asset('js/HomePageSortBy.js') }}"></script>
         @extends('Templates.master')
         @section('title')
-        Home
+        View Profile
         @endsection
 
         @if(count($errors) > 0)
@@ -22,32 +22,22 @@
        </div>
         @endif
 
-        @if(!Route::current()->getName() == 'Search')
 
+<div class="highest_div">
 
-        <div class="container" id="filterDiv">
-        	<div class="btn-group sort-btn">
-        		<button class="btn btn-primary" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id = "sortByBtn">
+  <div class="card mb-3 Card_Holder" >
+    <h5 class="card-title">{{$user->UserName}}'s Information</h5>
 
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filter" viewBox="0 0 16 16">
-              <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/>
-              </svg>
-              Sort By
+          <div class = "left_side_user">
+            <p class="card-text-Description">
+              <Strong> User Name : </strong> {{$user->UserName}}<br>
+              <Strong> Full Name : </strong> {{$user->FullName}}<br>
+              <Strong> Email : </strong> {{$user->Email}}<br>
+              <Strong> Phone Number : </strong> {{$user->PhoneNumber}}<br>
+              <Strong> Account Created : </strong> {{\Carbon\Carbon::parse($user->created_at)->format('d/m/Y H:i')}}<br>
 
-            </button>
-
-        		<ul class="dropdown-menu">
-        			<li><a href="/Filter/EventName" tabindex="-1" data-type="alpha">Name</a></li>
-        			<li><a href="/Filter/Date_Time" tabindex="-1" data-type="numeric">Date & Time</a></li>
-              <li><a href="/Filter/Interest_Ranking" tabindex="-1" data-type="numeric">Interest Rating</a></li>
-              <li><a href="/Filter/Category" tabindex="-1" data-type="alpha">Category</a></li>
-        		</ul>
-        	</div>
-        </div>
-        @endif
-
-
-        <div class="highest_div">
+          </div>
+  </div>
           @foreach($events as $event)
           @php
           $imageFound = false
@@ -83,7 +73,7 @@
 
                     <div class="col-md-8 sub_div">
                         <div class="card-body sub_div">
-                            <h5 class="card-title">{{$event->EventName}} - {{ \Carbon\Carbon::parse($event->Date_Time)->format('d/m/Y H:i')}}</h5>
+                            <h5 class="card-title">{{$event->EventName}} - {{ \Carbon\Carbon::parse($event->Date_Time)->format('d/m/Y H:i')}} <button onclick="window.location.href='/EditEvent/{{$event->EventID}}'" class="edit_button" >Edit</button>   <button onclick="window.location.href='/DeleteEvent/{{$event->EventID}}'" class="edit_button" >Delete</button> </h5>
                             <p class="card-text-Description">
                               <strong>Category : </strong>{{$event->Category}}<br>
                               {{Str::limit($event->Description,80, $end='...')}}

@@ -11,7 +11,9 @@ body {
     background-color: #782b90;
 }
 
-
+#RegisterError{
+  margin-top: 60px;
+}
 
 .my-form, .login-form {
 

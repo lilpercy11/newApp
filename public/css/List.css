@@ -6,13 +6,41 @@ body
     margin-top: 120px;
 }
 
-#Card_Holder {
+.Card_Holder {
     border-top: 25px;
-    width: 50%;
-    height: 30%;
+    max-width: 55%;
+    max-height: 20%;
     margin: auto;
-    margin-top: 80px;
+    padding: 20px;
+    position: relative;
+    overflow: : hidden;
+    box-sizing:border-box;
+    display: inline-block;
 }
+
+.highest_div{
+  margin-top: 5%;
+}
+
+.edit_button{
+  border-radius: 15px;
+  float: right;
+  background-color:#782b90 ;
+  color: white;
+}
+
+
+
+.left_side_user{
+  float: left;
+
+}
+
+.sub_div{
+
+  object-fit: contain;
+}
+
 
 .card-text-Creation {
     position: absolute;
@@ -30,9 +58,4 @@ body
 
 #searchError{
   padding-top: 60px;
-}
-
-#image_holder{
-  height:100%;
-  position: relative;
 }

@@ -25,6 +25,7 @@ Route::get('/Login', function () {
 //    return view('Register');
 //});
 Route::get('/Register', 'App\Http\Controllers\ModuleController@create')->name('Register');;
+Route::get('/ViewProfile', 'App\Http\Controllers\ModuleController@ViewProfile')->name('ViewProfile');;
 Route::post('/Register', 'App\Http\Controllers\ModuleController@storeNewUser');
 Route::post('/Login', 'App\Http\Controllers\ModuleController@login' )->name('Login');;
 
@@ -33,6 +34,10 @@ Route::get('/Filter/{filterBy}', 'App\Http\Controllers\ModuleController@filterEv
 
 Route::POST('/Search', 'App\Http\Controllers\ModuleController@searchEvents')->name('Search');
 
+Route::get('/EditEvent/{EventID}', 'App\Http\Controllers\ModuleController@EditEventGet');
+Route::get('/DeleteEvent/{EventID}', 'App\Http\Controllers\ModuleController@deleteEvent');
+
+Route::post('/EditEvent/{EventID}', 'App\Http\Controllers\ModuleController@EditEventPost');
 
 Route::get('/CreateEvent',function () {
     return view('/CreateEvent');

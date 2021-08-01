@@ -17,6 +17,18 @@
         @endsection
 
 <script type="text/javascript" src="{{ asset('js/RegistrationValidations.js') }}"></script>
+
+@if(count($errors) > 0)
+<div id="RegisterError">
+ @foreach( $errors->all() as $message )
+  <div class="alert alert-danger display-hide">
+   <button class="close" data-close="alert"></button>
+   <span>{{ $message }}</span>
+  </div>
+ @endforeach
+</div>
+@endif
+
 <main class="my-form">
     <div class="cotainer">
         <div class="row justify-content-center">
@@ -59,7 +71,7 @@
                                     </div>
                                 </div>
 
-                               
+
                                 <!--- Phone Number -->
                                 <div class="form-group row">
                                     <label for="PhoneNumber" class="col-md-4 col-form-label text-md-right">Phone Number</label>
@@ -68,7 +80,7 @@
                                     </div>
                                 </div>
 
-                                
+
 
                                     <div class="col-md-6 offset-md-4">
                                         <button type="submit" class="btn btn-primary" id="submitBtn">

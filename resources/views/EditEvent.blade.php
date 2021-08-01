@@ -19,7 +19,6 @@
         @if (Auth::check())
 <script type="text/javascript" src="{{URL::asset('js/EventCreation.js') }}"></script>
 
-
 <main class="my-form">
     <div class="cotainer">
         <div class="row justify-content-center">
@@ -27,13 +26,13 @@
                     <div class="card">
                         <div class="card-header">Create Event</div>
                         <div class="card-body">
-                            <form name="my-form" action="{{url('/CreateEvent')}}" method="post">
+                            <form name="my-form" action="/EditEvent/{{$event->EventID}}" method="post">
                             @CSRF
                             <!--- UserName -->
                             <div class="form-group row">
                                     <label for="EventName" class="col-md-4 col-form-label text-md-right">Event Name</label>
                                     <div class="col-md-6">
-                                        <input type="text" id="EventName" class="form-control" name="EventName">
+                                        <input type="text" id="EventName" class="form-control" name="EventName" value="{{$event->EventName}}">
                                     </div>
                                 </div>
 
@@ -41,7 +40,7 @@
                             <div class="form-group row" id="catRow">
                                 <label for="Category" class="col-md-4 col-form-label text-md-right">Category</label>
                                   <div class="col-md-6">
-                                      <select   id="Category" class="form-control" name="Category" >
+                                      <select   id="Category" class="form-control" name="Category" value="{{$event->Category}}">
                                         <option value = "Sports">Sports</option>
                                         <option value = "Culture">Culture</option>
                                         <option value = "Other">Other</option>
@@ -54,7 +53,7 @@
                             <div class="form-group row">
                                     <label for="Date_Time" class="col-md-4 col-form-label text-md-right">Date & Time</label>
                                     <div class="col-md-6">
-                                        <input type="datetime-local" id="Date_Time" class="form-control" name="Date_Time">
+                                        <input type="datetime-local" id="Date_Time" class="form-control" name="Date_Time" value="{{\Carbon\Carbon::parse($event->Date_Time)->format('Y-m-d\TH:i')}}">
                                     </div>
                                 </div>
 
@@ -62,7 +61,7 @@
                                 <div class="form-group row">
                                     <label for="Description" class="col-md-4 col-form-label text-md-right">Description</label>
                                     <div class="col-md-6">
-                                        <input type="text" id="Description" class="form-control" name="Description">
+                                        <input type="text" id="Description" class="form-control" name="Description" value="{{$event->Description}}">
                                     </div>
                                 </div>
 
@@ -71,7 +70,7 @@
                                 <div class="form-group row">
                                     <label for="Location" class="col-md-4 col-form-label text-md-right">Location</label>
                                     <div class="col-md-6">
-                                        <input type="text" id="Location" name = "Location" class="form-control">
+                                        <input type="text" id="Location" name = "Location" class="form-control" value="{{$event->Location}}">
                                     </div>
                                 </div>
 
@@ -97,7 +96,7 @@
 
                                     <div class="col-md-6 offset-md-4">
                                         <button type="submit" class="btn btn-primary" id="submitBtn">
-                                        Create Event
+                                        Update Event
                                         </button>
                                     </div>
                                 </div>

@@ -16,20 +16,47 @@ class ModuleController extends Controller
 {
     public function list(){
       $events = Module::all();
-      $images = array();
-      foreach ($events as $event) {
-        $image = EventImages::where('EventID',$event->EventID)->first();
-        if($image != null){
-         array_push($images, $image);
-         echo "<script type='text/javascript'>alert(". $image .");</script>";
-       }
-      }
+      $images = $this->getImagesHome($events);
 
 		return view('/Home', compact('events','images'));
 	}
 
+public function getImagesHome($events){
+  //small function to create images as to prevent data duplication
+  $images = array();
+  foreach ($events as $event) {
+    $image = EventImages::where('EventID',$event->EventID)->first();
+    if($image != null){
+     array_push($images, $image);
+     //echo "<script type='text/javascript'>alert(". $image .");</script>";
+   }
+  }
+  return $images;
+}
+
 public function filterEvents($filterBy){
-  return view('/Home', array('events'=>Module::all()->sortByDesc($filterBy)));
+  if($filterBy === "Interest_Ranking"){
+  $events = Module::all()->sortByDesc($filterBy);
+}
+  else{
+      $events = Module::all()->sortBy($filterBy);
+  }
+  $images = $this->getImagesHome($events);
+  return view('/Home', compact('events','images'));
+}
+
+public function searchEvents(Request $request){
+  $events = Module::where('EventName','LIKE',$request['Search'].'%' )->get();
+  $images = $this->getImagesHome($events);
+  if(count($events)>0){
+  return view('/Home', compact('events','images'));
+  }
+  else{
+    $errors = 'No Events Match Your Search, Please Try Again!';
+    echo "<script type='text/javascript'>alert('No Events Match Your Search, Please Try Again!');</script>";
+
+    return redirect('/')->withErrors($errors);
+  }
 }
 
     public function create()
@@ -42,12 +69,14 @@ public function filterEvents($filterBy){
 
        $request->validate([
             'UserName' => 'required',
-            'Password' => 'required',
+            'Password' => ['required', 'min:6'],
             'FullName' => 'required',
-            'Email' => 'required',
-            'PhoneNumber' => 'required',
+            'Email' => 'required|email',
+            'PhoneNumber' => ['required','regex:/^(\+44\s?\d{10}|0044\s?\d{10}|0\s?\d{10})?$/'],
 
         ]);
+        $ExistingUser = User::where('UserName', $request['UserName'])->first();
+        if($ExistingUser === null){
         $user= new User();
         $user->UserName= $request['UserName'];
         $user->Password= $request['Password'];
@@ -59,10 +88,16 @@ public function filterEvents($filterBy){
        $user = User::create($request->all());
        Auth::login($user,true);
        return redirect("/")->withSuccess('You have signed-in');
+     }
+      else{
+        $errors = "Username already exists";
+        return redirect()->back()->withErrors($errors);
+      }
 
     }
 
     public function login(Request $request){
+      if(!Auth::check()){
         $request->validate([
             'UserName' => 'required',
             'Password' => 'required',
@@ -92,8 +127,10 @@ public function filterEvents($filterBy){
                 return redirect()->back()->withErrors($errors);
              }
        //  }
-
-
+     }
+     else{
+       return redirect()->back()->withErrors("You are already Logged In! Please Sign Out First");
+     }
     }
 
     public function logout(){
@@ -177,10 +214,11 @@ public function filterEvents($filterBy){
     }
     }
 
+
     public function eventPage(Request $request){
     try{
     $event = Module::where('EventID',$request['EventID'])->firstOrFail();
-    $images = EventImages::where('EventID',$request['EventID']);
+    $images= EventImages::where('EventID',$request['EventID']);
     $getUserNameRequest = Module::select('UserName')->where('EventID', $request['EventID'])->get();
     $getUserName;
     foreach ($getUserNameRequest as $userNameFromRequest) {
@@ -231,16 +269,68 @@ public function filterEvents($filterBy){
 
     }
 
-    public function searchEvents(Request $request){
-      $events = Module::where('EventName','LIKE',$request['Search'].'%' )->get();
-      if(count($events)>0){
-      return view('/Home', array('events'=>$events));
+
+
+    public function EditEventGet($EventID){
+      $event = Module::where('EventID',$EventID)->firstOrFail();
+      return view('/EditEvent')->with(['event'=>$event]);
+    }
+
+    public function EditEventPost($EventID, Request $request){
+      $event = Module::where('EventID',$EventID)->firstOrFail();
+
+      $event->EventName = $request['EventName'];
+      $event->Category = $request['Category'];
+      $event->Date_Time = $request['Date_Time'];
+      $event->Description = $request['Description'];
+      $event->Location = $request['Location'];
+
+      $event->save();
+
+      return view('/EditEvent')->with(['event'=>$event]);
+    }
+
+    public function ViewProfile(){
+      if(Auth::check()){
+        $user = User::where('UserName',Auth::user()->UserName)->firstOrFail();
+        $events = Module::where('UserName',$user->UserName)->get();
+        $images = $this->getImagesHome($events);
+        return view('/ViewProfile', compact('user','events','images'));
       }
       else{
-        $errors = 'No Events Match Your Search, Please Try Again!';
-        echo "<script type='text/javascript'>alert('No Events Match Your Search, Please Try Again!');</script>";
-
-        return redirect('/')->withErrors($errors);
+        return redirect ("/Login")->withErrors("Please Log In before attempting to view your profile!");
       }
+    }
+
+    public function deleteEvent($EventID){
+      $event = Module::where('EventID',$EventID)->firstOrFail();
+      if(Auth::check()){
+        if(Auth::user()->UserName === $event->UserName){
+          $event->delete();
+          return redirect()->back();
+        }
+        else{
+          return redirect ("/Login")->withErrors("You are not authorised to delete this event! Please Log In as the event owner!");
+        }
+      }
+      else{
+        return redirect ("/Login")->withErrors("Please Log In before deleting an event!");
+      }
+    }
+
+    public function storeImages(Request $request){
+      $request->validate([
+                'image' => 'mimes:jpeg,bmp,png' // Only allow .jpg, .bmp and .png file types.
+            ]);
+
+            // Save the file locally in the storage/public/ folder under a new folder named /product
+            $request->file->store('product', 'public');
+
+            // Store the record, using the new file hashname which will be it's new filename identity.
+            $product = new Product([
+                "name" => $request->get('name'),
+                "file_path" => $request->file->hashName()
+            ]);
+            $product->save(); // Finally, save the record.
     }
 }
