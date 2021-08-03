@@ -7,8 +7,21 @@ window.onload = function(){
   input.addEventListener( 'change', showFileName );
 
   function showFileName( event ) {
-    var input = event.srcElement;
-    var fileName = input.files[0].name;
-    infoArea.textContent = 'File name: ' + fileName;
+    var input = event.srcElement
+    infoArea.textContent = "";
+    if(input.files.length === 0){
+      infoArea.textContent = "Upload New Image";
+    }
+
+    for(var i=0; i<input.files.length;i++){
+      var infoAreaText = infoArea.textContent;
+      if(i===0){
+      infoArea.textContent = 'File name: ' + input.files[i].name;
+      }
+      else{
+        infoArea.textContent = infoAreaText+ " & " + input.files[i].name;
+      }
+    }
+
   }
 }

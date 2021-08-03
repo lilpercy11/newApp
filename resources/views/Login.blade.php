@@ -33,21 +33,21 @@
 
                         <form id="login-form" class="form" action="/Login" method="post">
                         @CSRF
-                            <h3 class="text-center text-info" id = signInLabel>Sign In</h3>
+                            <h3 class="text-center labels_headings" id = signInLabel>Sign In</h3>
                             <div class="form-group">
-                                <label for="UserName" class="text-info">Username:</label><br>
+                                <label for="UserName" class="labels_headings">Username:</label><br>
                                 <input type="text" name="UserName" id="UserName" class="form-control">
                             </div>
                             <div class="form-group">
-                                <label for="Password" class="text-info">Password:</label><br>
+                                <label for="Password" class="labels_headings">Password:</label><br>
                                 <input type="password" name="Password" id="Password" class="form-control">
                             </div>
                             <div class="form-group">
-                                <label for="remember-me" class="text-info"><span>Remember me</span> <span><input id="remember-me" name="remember-me" type="checkbox"></span></label><br>
+                                <label for="remember-me" class="labels_headings"><span>Remember me</span> <span><input id="remember-me" name="remember-me" type="checkbox"></span></label><br>
                                 <input type="submit" name="submit" class="btn btn-info btn-md" value="submit">
                             </div>
                             <div id="register-link" class="text-right">
-                                <a href="Register" class="text-info">Register here</a>
+                                <a href="Register" class="labels_headings">Register here</a>
                             </div>
                         </form>
                     </div>

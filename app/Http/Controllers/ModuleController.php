@@ -11,6 +11,7 @@ use Validator;
 use Auth;
 use Crypt;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\File;
 
 class ModuleController extends Controller
 {
@@ -20,6 +21,7 @@ class ModuleController extends Controller
 
 		return view('/Home', compact('events','images'));
 	}
+
 
 public function getImagesHome($events){
   //small function to create images as to prevent data duplication
@@ -68,15 +70,13 @@ public function searchEvents(Request $request){
     {
 
        $request->validate([
-            'UserName' => 'required',
-            'Password' => ['required', 'min:6'],
-            'FullName' => 'required',
-            'Email' => 'required|email',
-            'PhoneNumber' => ['required','regex:/^(\+44\s?\d{10}|0044\s?\d{10}|0\s?\d{10})?$/'],
+            'UserName' => ['required', 'string', 'max:50', 'min:3' ,'unique:organiser_information', 'alpha_dash'],
+            'Password' => ['required', 'min:6', 'max:50', 'alpha_dash'],
+            'FullName' => ['required','max:70'],
+            'Email' => ['required','email','max:70'],
+            'PhoneNumber' => ['required','regex:/^(\+44\s?\d{10}|0044\s?\d{10}|0\s?\d{10})?$/','numeric'],
 
         ]);
-        $ExistingUser = User::where('UserName', $request['UserName'])->first();
-        if($ExistingUser === null){
         $user= new User();
         $user->UserName= $request['UserName'];
         $user->Password= $request['Password'];
@@ -88,11 +88,8 @@ public function searchEvents(Request $request){
        $user = User::create($request->all());
        Auth::login($user,true);
        return redirect("/")->withSuccess('You have signed-in');
-     }
-      else{
-        $errors = "Username already exists";
-        return redirect()->back()->withErrors($errors);
-      }
+
+
 
     }
 
@@ -107,8 +104,6 @@ public function searchEvents(Request $request){
        $user = User::where('UserName',$request['UserName'])->first();
             if ($user && Hash::check($request['Password'], $user->Password)) {
              //success
-             //echo "<script>console.log('Debug Objects: " . $request['UserName'] . "' );</script>";
-               // echo "<script>console.log('Debug Objects: " . $request['Password'] . "' );</script>";
 
                Auth::login($user,true);
                 if(Auth::check()){
@@ -144,15 +139,15 @@ public function searchEvents(Request $request){
     public function createEvent(Request $request){
     echo "<script type='text/javascript'>alert('event');</script>";
     echo "<script>console.log('Debug Objects: " . 'Creating event' . "' );</script>";
-   // $request->validate([
-    //        'UserName' => 'required',
-    //        'EventName' => 'required',
-    //        'Category' => 'required',
-    //        'Date_Time' => 'required',
-     //       'Description' => 'required',
-      //      'Location' => 'required',
+    $errors = "";
+    $request->validate([
+            'EventName' => ['required','min:3','max:70'],
+            'Category' => 'required',
+            'Date_Time' => 'required',
+            'Description' => ['required','min:3','max:255'],
+            'Location' => ['required','min:1','max:255'],
 
-//        ]);
+        ]);
 
         $event = new Module();
         $event->UserName = Auth::user()->UserName;
@@ -169,32 +164,38 @@ public function searchEvents(Request $request){
         $request->request->add(['Interest_Ranking' => 0]);
 
         $event = Module::create($request->all());
-
-//This section is for calling the imgur api to create a URL to store in the Database - not working
-//$client_id = 'd8a4be1553876b4';
-  /*      $client = new http\Client;
-        $requestAPI = new http\Client\Request;
-        $requestAPI->setRequestUrl('https://api.imgur.com/3/upload');
-        $requestAPI->setRequestMethod('POST');
-        $body = new http\Message\Body;
-        $body->addForm(array(
-
-        ), array(
-        array('name' => 'image', 'type' => '<Content-type header>', 'file' => $request['upload'], 'data' => null)
-        ));
-        $requestAPI->setBody($body);
-        $requestAPI->setOptions(array());
-        $requestAPI->setHeaders(array(
-        'Authorization' => 'Client-ID 546c25a59c58ad7'
-        ));
-        $client->enqueue($requestAPI)->send();
-        $response = $client->getResponse();
-        echo $response->getBody();
-        echo "<script>console.log('Debug Objects: " . $response->getBody() . "' );</script>";
-*/
+        if($request['images']!=null){
+        $this->storeImages($request);
+        }
 
         return redirect("/")->withSuccess('You have Created an Event');
     }
+
+
+    public function storeImages(Request $request){
+      //removes the first occurence in array which is FileName:
+     $images = $request->file('images');
+
+      $request->validate([
+                'images' => 'required',
+                'images.*' => 'mimes:jpeg,bmp,png,jpg' // Only allow .jpg, .bmp and .png file types.
+            ]);
+
+            foreach($images as $file){
+              // Save the file locally in the storage/public/ folder under a new folder named /product
+              $path = $file->storeAs('public/images', $request['EventID'].$file->getClientOriginalName());
+
+              // Store the record, using the new file hashname which will be it's new filename identity.
+              $eventImages = new EventImages([
+                  "EventID" => $request['EventID'],
+                  "PictureURL" => 'storage'.str_replace("public", "", $path)
+              ]);
+              $eventImages->save(); // Finally, save the record.
+            }
+
+    }
+
+
 
     public function interest(Request $request){
     echo "<script type='text/javascript'>alert('interest');</script>";
@@ -209,8 +210,8 @@ public function searchEvents(Request $request){
     }
     catch(Exception $e){
         echo "<script type='text/javascript'>alert('Failed to update value');</script>";
-        report($e);
-        return;
+        $errors = "Failed to register your interest! Please try again!";
+        return redirect("/")->withErrors($errors);
     }
     }
 
@@ -218,51 +219,32 @@ public function searchEvents(Request $request){
     public function eventPage(Request $request){
     try{
     $event = Module::where('EventID',$request['EventID'])->firstOrFail();
+    if($event === null){
+      $errors = "Event does not exist";
+      return redirect("/")->withErrors($errors);
+    }
     $images= EventImages::where('EventID',$request['EventID']);
-    $getUserNameRequest = Module::select('UserName')->where('EventID', $request['EventID'])->get();
+    $getUserNameRequest = Module::select('UserName')->whereRaw('EventID', $request['EventID'])->get();
     $getUserName;
     foreach ($getUserNameRequest as $userNameFromRequest) {
       $getUserName=$userNameFromRequest->UserName;
     }
     $eventOwner = User::select('FullName','Email','PhoneNumber')->where('UserName',$getUserName )->firstOrFail();
-  //  echo "<script>console.log('Debug Objects: " .$debuging . "' );</script>";
       echo "<script>console.log('Debug Objects: " .$getUserName . "' );</script>";
-    // $eventOwnerRequest= User::select('FullName','Email','PhoneNumber')->where('UserName', Module::select('UserName')->where('EventID', $request['EventID'])->get())->get();
-  //  $eventOwner=array();
-    //if($eventOwnerRequest !==null){
-  //    foreach ($eventOwnerRequest as $eventOwnerPlaceHolder) {
-  //      echo "<script>console.log('Debug Objects: " .$eventOwnerPlaceHolder . "' );</script>";
-  //      array_push($eventOwner,$eventOwnerPlaceHolder);
-  //    }
-  //    echo "<script type='text/javascript'>alert('Event Owner Populated');</script>";
-  //  }
-  //  else{
-  //    echo "<script type='text/javascript'>alert('event owner null');</script>";
-//    }
+
     if($images !== null){
     $imageCollection=array();
-     //echo "<script type='text/javascript'>alert('Success image');</script>";
      foreach($images->get() as $image){
      array_push($imageCollection,$image);
-     //echo "<script type='text/javascript'>alert('Success image 2');</script>";
        echo "<script>console.log('Debug Objects: " . $image . "' );</script>";
-       // echo "<script type='text/javascript'>alert(".$images.");</script>";
      }
-   //  echo "<script type='text/javascript'>alert(".$images->get().");</script>";
-     //return view('/Event')->with(['event'=>$event],['images'=>$imageCollection]);
      return view('/Event', compact('event','imageCollection','eventOwner'));
     }
     else{
         return view('/Event')->with(['event'=>$event],['images'=>'https://i.stack.imgur.com/y9DpT.jpg']);
     }
-     //echo "<script>console.log('Debug Objects: " . $images . "' );</script>";
-   // echo "<script type='text/javascript'>alert('Success valid Event');</script>";
-    //echo "<script type='text/javascript'>alert(".$event.");</script>";
-
-   // return view('/Event', compact('event','images'));
     }
     catch(Exception $e){
-        //echo "<script type='text/javascript'>alert('Invalid Event');</script>";
         return redirect("/")->with('requestError','Invalid Event');
     }
 
@@ -273,10 +255,28 @@ public function searchEvents(Request $request){
 
     public function EditEventGet($EventID){
       $event = Module::where('EventID',$EventID)->firstOrFail();
+      $images = $this->getImageNamesForEvent($EventID);
+      if($images === null){
       return view('/EditEvent')->with(['event'=>$event]);
+      }
+      else{
+        return view('/EditEvent',compact('event','images'));
+      }
     }
 
     public function EditEventPost($EventID, Request $request){
+      $errors = "";
+      $validateResult = $request->validate([
+              'EventName' => ['required','min:3','max:70'],
+              'Category' => 'required',
+              'Date_Time' => 'required',
+              'Description' => ['required','min:3','max:255'],
+              'Location' => ['required','min:1','max:255'],
+
+          ]);
+
+
+
       $event = Module::where('EventID',$EventID)->firstOrFail();
 
       $event->EventName = $request['EventName'];
@@ -287,7 +287,13 @@ public function searchEvents(Request $request){
 
       $event->save();
 
-      return view('/EditEvent')->with(['event'=>$event]);
+      $request->EventID = $EventID;
+
+      if($request->hasfile('images')){
+        $this->storeImages($request);
+      }
+
+      return redirect()->route('EditEventGet',$EventID);
     }
 
     public function ViewProfile(){
@@ -304,6 +310,14 @@ public function searchEvents(Request $request){
 
     public function deleteEvent($EventID){
       $event = Module::where('EventID',$EventID)->firstOrFail();
+      $images = EventImages::where('EventID',$EventID)->get();
+      if($images!==null){
+        foreach($images as $image){
+          $imageName = str_replace("storage/images/".$EventID,"",$image->PictureURL);
+          $image->delete();
+          File::delete("storage/images/".$EventID.$imageName);
+        }
+      }
       if(Auth::check()){
         if(Auth::user()->UserName === $event->UserName){
           $event->delete();
@@ -318,19 +332,29 @@ public function searchEvents(Request $request){
       }
     }
 
-    public function storeImages(Request $request){
-      $request->validate([
-                'image' => 'mimes:jpeg,bmp,png' // Only allow .jpg, .bmp and .png file types.
-            ]);
-
-            // Save the file locally in the storage/public/ folder under a new folder named /product
-            $request->file->store('product', 'public');
-
-            // Store the record, using the new file hashname which will be it's new filename identity.
-            $product = new Product([
-                "name" => $request->get('name'),
-                "file_path" => $request->file->hashName()
-            ]);
-            $product->save(); // Finally, save the record.
+    public function getImageNamesForEvent($EventID){
+      $imagesRaw = EventImages::where('EventID',$EventID)->get();
+      if($imagesRaw ===null){
+        return null;
+      }
+      $images = array();
+      foreach($imagesRaw as $image){
+        $imageName = str_replace("storage/images/".$EventID,"",$image->PictureURL);
+        array_push($images,$imageName);
+      }
+      return $images;
     }
+    public function deleteImageFromEvent($EventID,$Image){
+    try{  $pathToDelete =  "storage/images/".$EventID.$Image;
+      EventImages::where('PictureURL',$pathToDelete)->delete();
+      File::delete("storage/images/".$EventID.$Image);
+          return redirect()->route('EditEventGet',$EventID);
+        }
+      catch(Exception $e){
+       $errors = "Could not delete image!";
+        return redirect()->route('EditEventGet',$EventID)->withErrors($errors);
+      }
+    }
+
+
 }

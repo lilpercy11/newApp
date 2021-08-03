@@ -30,7 +30,7 @@
                   <div class="carousel-inner">
                         @if($imageCollection==null)
                         <div class="carousel-item active">
-                         <img class="d-block w-100" src="https://designshack.net/wp-content/uploads/placeholder-image.png" alt="First slide">
+                         <img class="d-block w-100" src="https://mdbootstrap.com/wp-content/uploads/2020/06/vertical.jpg" alt="First slide">
                         </div>
                         </div>
                         </div>
@@ -39,19 +39,13 @@
                         @foreach ($imageCollection as $index=>$image)
                             @if($index===0)
                             <div class="carousel-item active">
-                            <img class="d-block w-100" src="{{$image->PictureURL}}" alt="First slide">
+                            <img class="d-block w-100" src="{{url($image->PictureURL)}}" alt="First slide">
                             </div>
                            @else
                         <div class="carousel-item">
-                            <img class="d-block w-100" src="{{$image->PictureURL}}" alt="Second slide">
+                            <img class="d-block w-100" src="{{url($image->PictureURL)}}" alt="Second slide">
                         </div>
                          @endif
-                        <!--
-                        <img
-                        src="{{$image->PictureURL}}"
-                        alt="..."
-                        class="img-fluid"
-                      />-->
                       @endforeach
 
                       </div>

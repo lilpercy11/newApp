@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class EventImages extends Model
 {
     use HasFactory;
-
+    public $primaryKey  = 'EventID';
+    public $timestamps = false;
      protected $fillable = [
      'EventID',
      'PictureURL',

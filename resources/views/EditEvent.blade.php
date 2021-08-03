@@ -19,14 +19,25 @@
         @if (Auth::check())
 <script type="text/javascript" src="{{URL::asset('js/EventCreation.js') }}"></script>
 
+@if(count($errors) > 0)
+<div id="RegisterError">
+ @foreach( $errors->all() as $message )
+  <div class="alert alert-danger display-hide">
+   <button class="close" data-close="alert"></button>
+   <span>{{ $message }}</span>
+  </div>
+ @endforeach
+</div>
+@endif
+
 <main class="my-form">
     <div class="cotainer">
         <div class="row justify-content-center">
             <div class="col-md-8">
                     <div class="card">
-                        <div class="card-header">Create Event</div>
+                        <div class="card-header">Edit Existing Event</div>
                         <div class="card-body">
-                            <form name="my-form" action="/EditEvent/{{$event->EventID}}" method="post">
+                            <form name="my-form" action="/EditEvent/{{$event->EventID}}" method="post" enctype="multipart/form-data">
                             @CSRF
                             <!--- UserName -->
                             <div class="form-group row">
@@ -74,24 +85,29 @@
                                     </div>
                                 </div>
 
+                                @isset($images)
+
+                                @foreach($images as $image)
                                 <div class="form-group row">
-                                    <label for="URLInput" class="col-md-4 col-form-label text-md-right">Picture URL's</label>
-                                    <textarea rows="5" cols="1" id="URLInput" class="form-control"></textarea>
+                                    <label for="Location" class="col-md-4 col-form-label text-md-right">Image</label>
+                                    <div class="col-md-6">
+                                        <input type="text" name = "images" class="form-control" value="{{$image}}">
+                                    </div>
+                                    <a href="{{URL::route('deleteImageFromEvent', [$event->EventID, $image] )}}" class="btn btn-xs btn-info pull-right" >Delete</a>
                                 </div>
 
-                                <!-- Upload image input
-                                           <div class="input-group mb-3 px-2 py-2 rounded-pill bg-white shadow-sm">
-                                               <input id="upload" type="file" onchange="readURL(this);" class="form-control border-0" multiple>
-                                               <label id="upload-label" for="upload" class="font-weight-light text-muted">Choose file</label>
-                                               <div class="input-group-append">
-                                                   <label id="upload_new" for="upload" class="btn btn-light m-0 rounded-pill px-4"> <i class="fa fa-cloud-upload mr-2 text-muted"></i><small class="text-uppercase font-weight-bold text-muted">Choose file</small></label>
-                                               </div>
-                                           </div>
+                                @endforeach
 
-                                         -->
+                                @endisset
 
 
-
+                                <div class="input-group mb-3 px-2 py-2 rounded-pill bg-white shadow-sm">
+                                    <input id="upload" type="file" onchange="readURL(this);" name="images[]" multiple class="form-control border-0" accept="image/*">
+                                    <label id="upload-label" for="upload" class="font-weight-light text-muted">Upload New Image</label>
+                                    <div class="input-group-append">
+                                        <label id="upload_new" for="upload" class="btn btn-light m-0 rounded-pill px-4"> <i class="fa fa-cloud-upload mr-2 text-muted"></i><small class="text-uppercase font-weight-bold text-muted">Choose file</small></label>
+                                    </div>
+                                </div>
 
 
                                     <div class="col-md-6 offset-md-4">

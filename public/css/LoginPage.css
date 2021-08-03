@@ -25,6 +25,14 @@ body {
   margin-top: 60px;
 }
 
+.labels_headings{
+  color: #782b90;
+
+}
+.btn_color{
+  background-color: #782b90;
+}
+
 #signInLabel {
     color: #782b90;
 }

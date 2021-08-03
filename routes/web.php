@@ -34,8 +34,9 @@ Route::get('/Filter/{filterBy}', 'App\Http\Controllers\ModuleController@filterEv
 
 Route::POST('/Search', 'App\Http\Controllers\ModuleController@searchEvents')->name('Search');
 
-Route::get('/EditEvent/{EventID}', 'App\Http\Controllers\ModuleController@EditEventGet');
+Route::get('/EditEvent/{EventID}', 'App\Http\Controllers\ModuleController@EditEventGet')->name('EditEventGet');
 Route::get('/DeleteEvent/{EventID}', 'App\Http\Controllers\ModuleController@deleteEvent');
+Route::get('/DeleteImage/{EventID}/{Image}', 'App\Http\Controllers\ModuleController@deleteImageFromEvent')->name('deleteImageFromEvent');
 
 Route::post('/EditEvent/{EventID}', 'App\Http\Controllers\ModuleController@EditEventPost');
 

@@ -19,6 +19,16 @@
         @if (Auth::check())
 <script type="text/javascript" src="{{URL::asset('js/EventCreation.js') }}"></script>
 
+@if(count($errors) > 0)
+<div id="RegisterError">
+ @foreach( $errors->all() as $message )
+  <div class="alert alert-danger display-hide">
+   <button class="close" data-close="alert"></button>
+   <span>{{ $message }}</span>
+  </div>
+ @endforeach
+</div>
+@endif
 
 <main class="my-form">
     <div class="cotainer">
@@ -27,7 +37,7 @@
                     <div class="card">
                         <div class="card-header">Create Event</div>
                         <div class="card-body">
-                            <form name="my-form" action="{{url('/CreateEvent')}}" method="post">
+                            <form name="my-form" action="{{url('/CreateEvent')}}" method="post" enctype="multipart/form-data">
                             @CSRF
                             <!--- UserName -->
                             <div class="form-group row">
@@ -75,20 +85,27 @@
                                     </div>
                                 </div>
 
-                                <div class="form-group row">
-                                    <label for="URLInput" class="col-md-4 col-form-label text-md-right">Picture URL's</label>
-                                    <textarea rows="5" cols="1" id="URLInput" class="form-control"></textarea>
-                                </div>
 
-                                <!-- Upload image input
+
+
+
+
+
+
                                            <div class="input-group mb-3 px-2 py-2 rounded-pill bg-white shadow-sm">
-                                               <input id="upload" type="file" onchange="readURL(this);" class="form-control border-0" multiple>
-                                               <label id="upload-label" for="upload" class="font-weight-light text-muted">Choose file</label>
+                                               <input id="upload" type="file" onchange="readURL(this);" name="images[]" multiple class="form-control border-0" accept="image/*">
+                                               <label id="upload-label" for="upload" class="font-weight-light text-muted">Upload New Image</label>
                                                <div class="input-group-append">
                                                    <label id="upload_new" for="upload" class="btn btn-light m-0 rounded-pill px-4"> <i class="fa fa-cloud-upload mr-2 text-muted"></i><small class="text-uppercase font-weight-bold text-muted">Choose file</small></label>
                                                </div>
                                            </div>
 
+<!-- Upload image input
+<textarea rows="5" cols="1" id="URLInput" ></textarea>
+                                           <div class="form-group row">
+                                               <label for="URLInput" class="col-md-4 col-form-label text-md-right">Picture URL's</label>
+                                               <input type="file" id="URLInput" name="image1" class="form-control">
+                                           </div>
                                          -->
 
 
